@@ -8,27 +8,86 @@ Go to [Brev Deploy](https://brev.nvidia.com/launchable/deploy/now?launchableID=e
 
 ### 2. Open Code Server
 
-Once deployed, open the **Code Server** tab. It will run automated setup.
+Once deployed, open the **Code Server** tab. The NeMoClaw automated installer will start immediately.
+
+> **This startup takes approximately 15 minutes.** You'll see a progress sequence in the terminal — let it run to completion.
+
+The installer runs through three main phases:
+
+#### Phase 1 — Node.js
+
+Installs Node.js via nvm (needed for the MCP toolchain).
+
+```text
+[1/3] Node.js
+  ──────────────────────────────────────────────────
+[INFO]  Node.js not found — installing via nvm…
+  ✓  Installing nvm...
+  ✓  Installing Node.js 22...
+```
+
+#### Phase 2 — NemoClaw CLI
+
+Builds and links the NemoClaw CLI from source.
+
+```text
+[2/3] NemoClaw CLI
+  ──────────────────────────────────────────────────
+  ✓  Preparing OpenClaw package
+  ✓  Installing NemoClaw dependencies
+  ✓  Building NemoClaw plugin
+  ✓  Linking NemoClaw CLI
+```
+
+#### Phase 3 — Onboarding (longest step)
+
+This is the bulk of the wait. The onboarding wizard runs seven sub-steps:
+
+| Sub-step | What happens |
+|----------|-------------|
+| **[1/7] Preflight checks** | Verifies Docker, ports, and GPU availability |
+| **[2/7] Configuring inference** | You enter the inference endpoint (see step 3 below) |
+| **[3/7] Starting OpenShell gateway** | Downloads and launches the gateway container |
+| **[4/7] Setting up inference provider** | Configures the model route |
+| **[5/7] Creating sandbox** | Builds and pushes the sandbox image (~1 GB) — **this is the slowest part** |
+| **[6/7] Setting up OpenClaw** | Launches the OpenClaw gateway inside the sandbox |
+| **[7/7] Policy presets** | Applies default network policies (accept the suggested presets) |
 
 ### 3. Enter the inference endpoint
 
-When prompted, enter:
+During **[2/7] Configuring inference**, the installer will prompt you interactively. Enter:
 
-- **Endpoint:** `https://passage-arthritis-sessions-lawsuit.trycloudflare.com/enterpriseai/v1/`
-- **API key:** (will be provided)
-- **Model name:** (will be provided)
+1. **Choose option:** `3` (Other OpenAI-compatible endpoint)
+2. **Base URL:** `https://passage-arthritis-sessions-lawsuit.trycloudflare.com/enterpriseai/v1`
+3. **API key:** (will be provided)
+4. **Model name:** `gpt-oss-120b`
 
-### 4. Open the chat UI
+After you enter these, the rest of the install continues automatically.
 
-After setup finishes, you will get a URL in the Code Server like:
+### 4. Wait for the install to finish
+
+When complete, you'll see a summary like this:
 
 ```text
-https://openclaw0-XXXXX.brevlab.com#token=...
+  ──────────────────────────────────────────────────
+  Sandbox      my-assistant (Landlock + seccomp + netns)
+  Model        gpt-oss-120b (Other OpenAI-compatible endpoint)
+  ──────────────────────────────────────────────────
 ```
 
-Paste that into your browser to open the OpenClaw chat.
+Followed by the OpenClaw connection URL:
 
-### 5. Run the MCP setup commands below
+```text
+OpenClaw connection details
+  Sandbox: my-assistant
+  URL: https://openclaw0-XXXXX.brevlab.com#token=...
+```
+
+### 5. Open the chat UI
+
+Copy the full URL (including the `#token=...` part) and paste it into your browser to open the OpenClaw chat.
+
+### 6. Run the MCP setup commands below
 
 Run the following steps in the **Code Server terminal**, then go back to the chat UI to test.
 
