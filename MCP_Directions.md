@@ -386,55 +386,22 @@ Use Hugging Face MCP to find the top Meta Llama instruct models.
 Use Hugging Face MCP to find recent papers about diffusion transformers.
 ```
 
----
+### 15. See what happens without MCP
 
-## Trouble Help
+> **Instructor step:** The instructor will now disable the MCP tools.
 
-### No response in chat
+Once the instructor confirms the tools have been disabled, go back to the chat UI:
 
-Run this:
-
-```bash
-ssh openshell-my-assistant 'python3 - <<'\''PY'\''
-from pathlib import Path
-from datetime import date, timedelta
-
-root = Path("/sandbox/.openclaw/workspace")
-(root / "memory").mkdir(parents=True, exist_ok=True)
-(root / "MEMORY.md").touch()
-(root / "memory" / f"{date.today().isoformat()}.md").touch()
-(root / "memory" / f"{(date.today() - timedelta(days=1)).isoformat()}.md").touch()
-(root / "BOOTSTRAP.md").unlink(missing_ok=True)
-
-for name in ["TOOLS.md", "HEARTBEAT.md"]:
-    p = root / name
-    if p.exists():
-        p.unlink()
-
-(root / "SOUL.md").write_text("# Workshop Assistant\n\nYou are a helpful workshop assistant. Be concise.\n")
-(root / "IDENTITY.md").write_text("# Identity\n\nName: Workshop Bot\n")
-(root / "USER.md").write_text("# User\n\nWorkshop attendee.\n")
-(root / "AGENTS.md").write_text("# AGENTS.md\n\nWorkshop mode. No startup file reads required. Just reply to the user.\n")
-
-print("workspace-ready")
-PY'
-ssh openshell-my-assistant 'openclaw gateway stop >/dev/null 2>&1 || true && OPENCLAW_CONFIG_PATH=/sandbox/config/openclaw.json nohup openclaw gateway run > /tmp/gateway.log 2>&1 &'
-```
-
-Then refresh the browser, type `/new`, and try again.
-
-### `Bad gateway`
-
-```bash
-ssh openshell-my-assistant 'openclaw gateway stop >/dev/null 2>&1 || true && OPENCLAW_CONFIG_PATH=/sandbox/config/openclaw.json nohup openclaw gateway run > /tmp/gateway.log 2>&1 &'
-```
-
-Wait a few seconds. Refresh the browser.
-
-### Skill does not trigger
-
-Use this exact wording:
+1. Refresh the page.
+2. Type `/new`.
+3. Try the same prompts again:
 
 ```text
 Use Hugging Face MCP to explain text generation in Transformers.
 ```
+
+```text
+Use Hugging Face MCP to find the top Meta Llama instruct models.
+```
+
+Notice the difference — without MCP, the assistant can no longer search Hugging Face live. It falls back to its training data or tells you it can't access external tools. This is the value MCP adds: giving the model real-time access to APIs and data sources it couldn't reach on its own.
