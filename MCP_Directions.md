@@ -270,7 +270,22 @@ Uploading ./config -> sandbox:/sandbox/config
 ✓ Upload complete
 ```
 
-## Step 5: Install the Hugging Face skill
+## Step 5: Install mcporter inside the sandbox
+
+The skill commands use `npx mcporter call ...` to invoke MCP tools. Since the sandbox blocks most outbound traffic, `npx` can't download mcporter on the fly — it needs to be pre-installed.
+
+```bash
+ssh openshell-my-assistant 'cd /sandbox && npm install mcporter && echo mcporter-ready'
+```
+
+You want to see:
+
+```text
+added ... packages ...
+mcporter-ready
+```
+
+## Step 6: Install the Hugging Face skill
 
 This installs a skill file that teaches the OpenClaw agent how to call the Hugging Face MCP tools. When you ask about Hugging Face topics in chat, the agent reads this skill and knows which command to run.
 
@@ -325,7 +340,7 @@ Uploading ./skill/huggingface -> sandbox:/sandbox/.agents/skills
 ready
 ```
 
-## Step 6: Restart the gateway
+## Step 7: Restart the gateway
 
 This restarts the OpenClaw gateway so it picks up the new config, policy, and skill files. The gateway is what connects the chat UI to the model and tools.
 
@@ -342,7 +357,7 @@ LISTEN ... 127.0.0.1:18789 ...
 LISTEN ... [::1]:18789 ...
 ```
 
-## Step 7: Test it
+## Step 8: Test it
 
 Everything is set up. Now test it in the chat UI.
 
