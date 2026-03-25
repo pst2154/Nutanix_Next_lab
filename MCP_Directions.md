@@ -87,33 +87,13 @@ OpenClaw connection details
 
 Copy the full URL (including the `#token=...` part) and paste it into your browser to open the OpenClaw chat.
 
-### 6. Run the MCP setup commands below
+### 6. Set up SSH and make the config writable
 
-Run the following steps in the **Code Server terminal**, then go back to the chat UI to test.
-
----
-
-You can safely run the steps more than once.
-
-## What this gives you
-
-Your OpenClaw chat will answer Hugging Face questions using the NAI-routed MCP endpoint.
-
-Good demo questions:
-
-- search Transformers docs
-- find top Meta Llama models
-- find recent ML papers
-
----
-
-## Step 1: Set up SSH and create a writable config
-
-This adds an SSH alias so you can reach the sandbox easily, then copies the OpenClaw config to a writable location and restarts the gateway using it.
+The default config at `/sandbox/.openclaw/openclaw.json` is read-only. Run these commands in the **Code Server terminal** to set up SSH access, copy the config to a writable location, and restart the gateway pointing at the copy.
 
 ```bash
 openshell sandbox ssh-config my-assistant >> ~/.ssh/config
-ssh openshell-my-assistant 'mkdir -p /sandbox/config && rm -f /sandbox/config/openclaw.json && cp /sandbox/.openclaw/openclaw.json /sandbox/config/openclaw.json && chmod 600 /sandbox/config/openclaw.json && openclaw gateway stop >/dev/null 2>&1 || true && OPENCLAW_CONFIG_PATH=/sandbox/config/openclaw.json nohup openclaw gateway run > /tmp/gateway.log 2>&1 &'
+ssh openshell-my-assistant 'mkdir -p /sandbox/config && cp /sandbox/.openclaw/openclaw.json /sandbox/config/openclaw.json && chmod 600 /sandbox/config/openclaw.json && openclaw gateway stop >/dev/null 2>&1 || true && OPENCLAW_CONFIG_PATH=/sandbox/config/openclaw.json nohup openclaw gateway run > /tmp/gateway.log 2>&1 &'
 ```
 
 Check it:
@@ -130,9 +110,9 @@ LISTEN ... [::1]:18789 ...
 ready
 ```
 
-## Step 2: Prepare workspace for workshop
+### 7. Prepare the workspace
 
-This creates the memory files and simplified persona files that the chat expects on startup. Without these, the model gets stuck trying to read files that don't exist and never replies.
+The chat needs memory and persona files to exist on startup. Without these, the model gets stuck trying to read missing files and never replies.
 
 ```bash
 ssh openshell-my-assistant 'python3 - <<'\''PY'\''
@@ -166,7 +146,35 @@ You want to see:
 workspace-ready
 ```
 
-## Step 3: Patch the sandbox network policy
+### 8. Try the chat (before MCP)
+
+Before adding any tools, take a few minutes to chat with the baseline assistant. This is OpenClaw running with just the LLM — no MCP tools connected yet.
+
+Try some general questions:
+
+```text
+What is Hugging Face?
+```
+
+```text
+Explain what a transformer model is in 3 sentences.
+```
+
+```text
+What are the most popular open-source LLMs right now?
+```
+
+Notice that the model can answer from its training data, but it **cannot** search Hugging Face, look up live model rankings, or fetch real documentation. That's what we'll add next.
+
+---
+
+## Adding MCP Tools
+
+These steps connect the Hugging Face MCP server so the assistant can search docs, models, and papers live. Run them in the **Code Server terminal**, then go back to the chat UI to test.
+
+You can safely run these steps more than once.
+
+### 9. Patch the sandbox network policy
 
 This allows the sandbox to reach the Hugging Face MCP endpoint and Hugging Face websites. The sandbox blocks all outbound traffic by default, so without this the MCP calls would be denied.
 
@@ -231,7 +239,7 @@ Wrote policy.yaml
 ✓ Policy version ... loaded
 ```
 
-## Step 4: Upload the MCP server config
+### 10. Upload the MCP server config
 
 This creates and uploads the `mcporter.json` file that tells the sandbox how to connect to the NAI-routed Hugging Face MCP server, including the endpoint URL and auth token.
 
@@ -270,7 +278,7 @@ Uploading ./config -> sandbox:/sandbox/config
 ✓ Upload complete
 ```
 
-## Step 5: Install mcporter inside the sandbox
+### 11. Install mcporter inside the sandbox
 
 The skill commands use `npx mcporter call ...` to invoke MCP tools. Since the sandbox blocks most outbound traffic, `npx` can't download mcporter on the fly — it needs to be pre-installed.
 
@@ -285,7 +293,7 @@ added ... packages ...
 mcporter-ready
 ```
 
-## Step 6: Install the Hugging Face skill
+### 12. Install the Hugging Face skill
 
 This installs a skill file that teaches the OpenClaw agent how to call the Hugging Face MCP tools. When you ask about Hugging Face topics in chat, the agent reads this skill and knows which command to run.
 
@@ -340,7 +348,7 @@ Uploading ./skill/huggingface -> sandbox:/sandbox/.agents/skills
 ready
 ```
 
-## Step 7: Restart the gateway
+### 13. Restart the gateway
 
 This restarts the OpenClaw gateway so it picks up the new config, policy, and skill files. The gateway is what connects the chat UI to the model and tools.
 
@@ -357,7 +365,7 @@ LISTEN ... 127.0.0.1:18789 ...
 LISTEN ... [::1]:18789 ...
 ```
 
-## Step 8: Test it
+### 14. Test it with MCP
 
 Everything is set up. Now test it in the chat UI.
 
